@@ -1,6 +1,12 @@
+var useLocalStorage = true;
+
 $(document).ready(function(){ 
 
 	CheckLocalStoreValidity();
+
+	UpdateElements();
+
+	FormatTextAreas();
 
 	// Minimize/Show clicked subfolder
 	$('.subFolderTitle > .hideSubFolder').click(function(){ 
@@ -46,29 +52,20 @@ $(document).ready(function(){
 		HandleUpDown($(this),$('.entryText'), 'eId');
 	}); 
 
-	FormatTextAreas();
+	// Search functionality
+	$('#search').keyup(function(){
+		UpdateSearch($(this).value);
+	});
+
+	
 });
 
-function ChangeState(current, localStorageKey)
+function UpdateSearch(text)
 {
-	var value = current.css('display');
-
-	if(value == 'block')
-	{
-		current.slideUp('normal'); 
-		value = 'none';
-	}
-	else
-	{
-		current.slideDown('normal'); 
-		value = 'block';
-	}
-	
-	localStorage.setItem(localStorageKey, value);	
+	alert(text);
 }
 
-var useLocalStorage = true;
-
+// Check that local store is valid for current page
 function CheckLocalStoreValidity()
 {
 	if (localStorage == null)
@@ -77,6 +74,7 @@ function CheckLocalStoreValidity()
 		return;
 	}
 	
+	// Check that localstorage matches with current page
 	var stored = localStorage.getItem('guid');
 	var current = $('#guid').html();
 
@@ -85,7 +83,14 @@ function CheckLocalStoreValidity()
 		localStorage.clear();
 		localStorage.setItem('guid', current);
 	}
-	
+}
+
+// If local store in use, update element visibility to last known state
+function UpdateElements()
+{
+	if (!useLocalStorage)
+		return;
+
 	// Go through all subfolders (maintitles)
 	$('.subFolderTitle').each(function(){
 		var id = $(this).attr('fId');
@@ -113,6 +118,9 @@ function CheckLocalStoreValidity()
 	});
 }
 
+// http://stackoverflow.com/a/8709824/1292530
+// This goes through the <pre> and wraps each section in a <div> with padding-left equal to the number of spaces of indentation
+// Double line change adds extra <br/>s
 function FormatTextAreas()
 {
 	$('pre').each(function(){
@@ -128,6 +136,25 @@ function FormatTextAreas()
 
 		$(this).html(html);
 	});
+}
+
+function ChangeState(current, localStorageKey)
+{
+	var value = current.css('display');
+
+	if(value == 'block')
+	{
+		current.slideUp('normal'); 
+		value = 'none';
+	}
+	else
+	{
+		current.slideDown('normal'); 
+		value = 'block';
+	}
+	
+	if (useLocalStorage)
+		localStorage.setItem(localStorageKey, value);	
 }
 
 function HandleUpDown(self, target, key){
@@ -160,6 +187,7 @@ function HandleUpDown(self, target, key){
 		else
 			return;
 
-		localStorage.setItem(key + '_' + id, display);
+		if (useLocalStorage)
+			localStorage.setItem(key + '_' + id, display);
 	});
 }

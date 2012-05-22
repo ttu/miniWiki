@@ -16,6 +16,10 @@ pre {
     margin-bottom:1px;
 }
 
+img { 
+    display:block; 
+} 
+
 div#titleArea { 
     margin-bottom:15px;
 }

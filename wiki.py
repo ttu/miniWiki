@@ -2,6 +2,7 @@ import sys
 import os
 import codecs
 import uuid
+import re
 
 fileToSave = "index.html" 
 folderCounter = 0
@@ -59,26 +60,69 @@ def processFolder(root):
 
 	for item in os.listdir(root):
 		if os.path.isfile(os.path.join(root, item)) == False:
+			# Skip Images folders (this is reserved folder name)
+			#if item == "Images":
+			#	continue
+
 			html += processFolder(os.path.join(root, item))
+
 		else:
+			name, extension = os.path.splitext(item)
+
+			if extension != ".txt":
+				continue
+
 			print(os.path.join(root,item))
 			# Show only filename in header (drop extension)
 			entryCounter += 1
-			name, extension = os.path.splitext(item)
 
 			html += "<!-- Start of {0} -->\n".format(name)
 			html += "<div class='entry' eId='{0}'>\n<label class='entryTitle hideEntry'>{1}</label>\n".format(str(entryCounter), name)
 
 			with codecs.open(os.path.join(root,item), 'r', 'utf-8') as f:
-				html += "<div class='entryText hidden eId_{0}'>\n".format(str(entryCounter))
-				html += "<pre>\n{0}\n</pre>\n".format(f.read())
-				html += "<label class='closeEntry smallText'>[ close ]</label>\n"
-				html += "</div>\n</div>\n<!-- End of {0} --> \n\n".format(name)
+				html += createEntry(entryCounter, os.path.basename(root), name, f.read())
 		
 	html += "</div>\n</div>\n\n"
 	html += "<!-- End of {0} -->\n\n".format(os.path.basename(root))
 		
-	return html;
+	return html
+
+def createEntry(entryCounter, folder, name, text):
+	html = "<div class='entryText hidden eId_{0}'>\n".format(str(entryCounter))
+
+	textToProcess = text
+	lst = [] # Declares an empty list
+
+	# if text contains images <img src= />
+	if textToProcess.find("<img") >= 0:
+		while textToProcess.find("<img") >= 0:
+			start = textToProcess.find("<img")
+			end = textToProcess.find(">", start) +1
+
+			if start == 0: # is in the beginning
+				lst.append(textToProcess[0:end])
+			else:
+				lst.append(textToProcess[0:start-1])
+				lst.append(textToProcess[start:end])
+
+			textToProcess = textToProcess[end:]
+
+	lst.append(textToProcess)
+
+	for part in lst:
+		if part.strip() == "":
+			continue
+
+		if part.find("<img") >= 0:
+			# TODO: Process folder to source
+			html += "{0}\n".format(part.replace("src=\"", "src=\".\{0}\\".format(folder)))
+		else:
+			html += "<pre>\n{0}\n</pre>\n".format(part)
+	
+	html += "<label class='closeEntry smallText'>[ close ]</label>\n"
+	html += "</div>\n</div>\n<!-- End of {0} --> \n\n".format(name)
+
+	return html
 
 def writeToFile(folder, html):
 	with codecs.open(os.path.join(folder, fileToSave), 'w', 'utf-8') as f:
