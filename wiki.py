@@ -115,7 +115,7 @@ def createEntry(entryCounter, folder, name, text):
 
 		if part.find("<img") >= 0:
 			# TODO: Process folder to source
-			html += "{0}\n".format(part.replace("src=\"", "src=\".\{0}\\".format(folder)))
+			html += "{0}\n".format(part.replace("src=\"", "src=\"./{0}/".format(folder)))
 		else:
 			html += "<pre>\n{0}\n</pre>\n".format(part)
 	
