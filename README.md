@@ -2,4 +2,4 @@
 
 Create read-only wiki from text files
 
-Sample page: http://tomi.viuhka.fi/miniWiki/index.html
+Sample page: http://iki.fi/tomi.tuhkanen//miniWiki/index.html
